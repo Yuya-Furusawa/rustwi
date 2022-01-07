@@ -14,6 +14,14 @@ pub async fn create_tweet(repo: &impl Tweets, message: &str) {
     repo.store(&new_tweet).await;
 }
 
+pub async fn delete_tweet(repo: &impl Tweets, id: i32) {
+    let tweet = repo.find(id).await;
+    if let Some(mut tweet) = tweet {
+        tweet.delete();
+        repo.store(&tweet).await;
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use chrono::{TimeZone, Utc};
@@ -61,5 +69,27 @@ mod tests {
 
         let tweet = tweet(1);
         super::create_tweet(&tweets, &tweet.message).await;
+    }
+
+    #[tokio::test]
+    async fn test_delete_tweet() {
+        let mut tweets = MockTweets::new();
+        tweets.expect_find().returning(|_| Some(tweet(1)));
+        tweets
+            .expect_store()
+            .withf(|e| e.id() == Some(1) && e.is_deleted())
+            .once()
+            .return_const(());
+
+        super::delete_tweet(&tweets, 1).await;
+    }
+
+    #[tokio::test]
+    async fn test_delete_tweet_not_found() {
+        let mut tweets = MockTweets::new();
+        tweets.expect_find().returning(|_| None);
+        tweets.expect_store().never();
+
+        super::delete_tweet(&tweets, 1).await;
     }
 }

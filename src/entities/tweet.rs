@@ -1,10 +1,10 @@
 use chrono::{DateTime, Utc};
 
 pub struct Tweet {
-    #[allow(dead_code)]
     id: Option<i32>,
     pub message: String,
     pub posted_at: DateTime<Utc>,
+    deleted: bool,
 }
 
 impl Tweet {
@@ -13,6 +13,7 @@ impl Tweet {
             id: Some(id),
             message,
             posted_at,
+            deleted: false,
         }
     }
 
@@ -21,11 +22,19 @@ impl Tweet {
             id: None,
             message: message.into(),
             posted_at: Utc::now(),
+            deleted: false,
         }
     }
 
-    #[allow(dead_code)]
     pub fn id(&self) -> Option<i32> {
         self.id
+    }
+
+    pub fn is_deleted(&self) -> bool {
+        self.deleted
+    }
+
+    pub fn delete(&mut self) {
+        self.deleted = true;
     }
 }
