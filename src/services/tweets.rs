@@ -1,3 +1,4 @@
+use crate::entities::Tweet;
 use crate::repositories::Tweets;
 use crate::views::Home;
 
@@ -6,6 +7,11 @@ pub async fn list_tweets(repo: &impl Tweets) -> Home {
     Home {
         tweets: tweets.into_iter().map(|x| x.into()).collect(),
     }
+}
+
+pub async fn create_tweet(repo: &impl Tweets, message: &str) {
+    let new_tweet = Tweet::create(message);
+    repo.store(&new_tweet).await;
 }
 
 #[cfg(test)]
@@ -42,5 +48,18 @@ mod tests {
 
         let result = super::list_tweets(&tweets).await;
         assert_eq!(result.tweets.is_empty(), true);
+    }
+
+    #[tokio::test]
+    async fn test_create_tweet() {
+        let mut tweets = MockTweets::new();
+        tweets
+            .expect_store()
+            .withf(|e| e.message == tweet(1).message)
+            .once()
+            .return_const(());
+
+        let tweet = tweet(1);
+        super::create_tweet(&tweets, &tweet.message).await;
     }
 }

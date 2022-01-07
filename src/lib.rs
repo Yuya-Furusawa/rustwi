@@ -31,7 +31,7 @@ mod repositories {
 mod services {
     mod tweets;
 
-    pub use tweets::list_tweets;
+    pub use tweets::{create_tweet, list_tweets};
 }
 
 mod response;
