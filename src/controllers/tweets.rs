@@ -1,7 +1,8 @@
-use crate::response;
-use crate::views::{Home, Tweet};
 use axum::{extract::Form, response::IntoResponse, routing, Router};
 use serde::Deserialize;
+
+use crate::response;
+use crate::views::{Home, Tweet};
 
 pub fn tweets() -> Router {
     Router::new().route("/new", routing::post(post))
