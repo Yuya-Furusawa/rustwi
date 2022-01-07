@@ -1,4 +1,9 @@
-use axum::{response::Html, routing::get, Router};
+use askama::Template;
+use axum::{
+    response::{Html, IntoResponse},
+    routing::get,
+    Router,
+};
 use std::net::SocketAddr;
 
 #[tokio::main]
@@ -18,6 +23,27 @@ async fn main() {
         .unwrap();
 }
 
-async fn handler() -> Html<&'static str> {
-    Html("<h1>Hello, World!</h1>")
+async fn handler() -> impl IntoResponse {
+    let tweets = (1..=20)
+        .into_iter()
+        .map(|_| TweetView {
+            name: "太郎".to_string(),
+            message: "こんにちは！".to_string(),
+            posted_at: "2020-01-01 12:34".to_string(),
+        })
+        .collect();
+    let home = Home { tweets };
+    Html(home.render().unwrap()).into_response()
+}
+
+struct TweetView {
+    name: String,
+    message: String,
+    posted_at: String,
+}
+
+#[derive(Template)]
+#[template(path = "home.html")]
+struct Home {
+    tweets: Vec<TweetView>,
 }
