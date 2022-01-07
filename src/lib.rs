@@ -8,6 +8,30 @@ mod controllers {
 
 mod database;
 
+mod entities {
+    mod tweet;
+
+    pub use tweet::Tweet;
+}
+
+mod repos_impl {
+    mod tweets;
+
+    pub use tweets::TweetsImpl;
+}
+
+mod repositories {
+    mod tweets;
+
+    pub use tweets::Tweets;
+}
+
+mod services {
+    mod tweets;
+
+    pub use tweets::list_tweets;
+}
+
 mod response;
 
 mod views {
