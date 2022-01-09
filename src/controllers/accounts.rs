@@ -1,13 +1,13 @@
 use axum::{
     extract::{Extension, Form},
     http::Uri,
-    response::{IntoResponse, Redirect},
+    response::{Headers, IntoResponse, Redirect},
     routing, Router,
 };
 use serde::Deserialize;
 
 use crate::database::RepositoryProvider;
-use crate::services;
+use crate::services::{self, SessionToken};
 
 pub fn accounts() -> Router {
     Router::new()
@@ -27,7 +27,8 @@ async fn post(
         &form.display_name,
     )
     .await;
-    Redirect::to(Uri::from_static("/"))
+    let session_token = services::create_session(&account_repo, &form.email, &form.password).await;
+    redirect_with_session(session_token)
 }
 
 async fn new_session(
@@ -35,10 +36,20 @@ async fn new_session(
     Extension(repository_provider): Extension<RepositoryProvider>,
 ) -> Result<impl IntoResponse, impl IntoResponse> {
     let account_repo = repository_provider.accounts();
-    let is_signed_in = services::create_session(&account_repo, &form.email, &form.password).await;
-    is_signed_in
-        .then(|| Redirect::to(Uri::from_static("/")))
-        .ok_or(Redirect::to(Uri::from_static("/login?error=invalid")))
+    let session_token = services::create_session(&account_repo, &form.email, &form.password).await;
+    redirect_with_session(session_token)
+}
+
+fn redirect_with_session(
+    session: Option<SessionToken>,
+) -> Result<impl IntoResponse, impl IntoResponse> {
+    if let Some(session_token) = session {
+        let headers = Headers(vec![("Set-Cookie", session_token.cookie())]);
+        let response = Redirect::to(Uri::from_static("/"));
+        Ok((headers, response))
+    } else {
+        Err(Redirect::to(Uri::from_static("/login?error=invalid")))
+    }
 }
 
 #[derive(Deserialize)]

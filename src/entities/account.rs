@@ -1,7 +1,6 @@
 use sha2::{Digest, Sha256};
 
 pub struct Account {
-    #[allow(dead_code)]
     id: Option<i32>,
     pub email: String,
     pub hashed_password: String,
@@ -27,7 +26,6 @@ impl Account {
         }
     }
 
-    #[allow(dead_code)]
     pub fn id(&self) -> Option<i32> {
         self.id
     }

@@ -7,6 +7,7 @@ use axum::{
 use serde::Deserialize;
 
 use crate::database::RepositoryProvider;
+use crate::request::UserContext;
 use crate::services;
 
 pub fn tweets() -> Router {
@@ -16,6 +17,7 @@ pub fn tweets() -> Router {
 }
 
 async fn post(
+    _: UserContext,
     form: Form<TweetForm>,
     Extension(repository_provider): Extension<RepositoryProvider>,
 ) -> impl IntoResponse {
@@ -25,6 +27,7 @@ async fn post(
 }
 
 async fn delete(
+    _: UserContext,
     Path(id): Path<i32>,
     Extension(repository_provider): Extension<RepositoryProvider>,
 ) -> impl IntoResponse {

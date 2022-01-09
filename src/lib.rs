@@ -1,3 +1,15 @@
+mod constants {
+    use std::env;
+
+    pub const AXUM_SESSION_COOKIE_NAME: &str = "rustwi_session";
+    pub const AXUM_SESSION_USER_ID_KEY: &str = "uid";
+
+    pub fn database_url() -> String {
+        dotenv::dotenv().ok();
+        env::var("DATABASE_URL").unwrap()
+    }
+}
+
 mod controllers {
     mod accounts;
     mod root;
@@ -42,9 +54,11 @@ mod services {
     mod accounts;
     mod tweets;
 
-    pub use accounts::{create_account, create_session};
+    pub use accounts::{create_account, create_session, SessionToken};
     pub use tweets::{create_tweet, delete_tweet, list_tweets};
 }
+
+mod request;
 
 mod response;
 
@@ -65,3 +79,12 @@ mod views {
 }
 
 pub use controllers::app;
+
+pub async fn setup_session_store() {
+    let database_url = constants::database_url();
+    let store = async_sqlx_session::PostgresSessionStore::new(&database_url)
+        .await
+        .unwrap();
+    store.migrate().await.unwrap();
+    store.spawn_cleanup_task(std::time::Duration::from_secs(3600));
+}

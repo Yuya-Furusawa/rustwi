@@ -7,6 +7,8 @@ async fn main() {
     }
     tracing_subscriber::fmt::init();
 
+    rustwi::setup_session_store().await;
+
     let app = rustwi::app().await;
 
     let addr = SocketAddr::from(([127, 0, 0, 1], 3000));

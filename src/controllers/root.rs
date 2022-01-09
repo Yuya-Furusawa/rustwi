@@ -7,6 +7,7 @@ use serde::Deserialize;
 
 use crate::controllers::{accounts, tweets};
 use crate::database::{self, RepositoryProvider};
+use crate::request::UserContext;
 use crate::response;
 use crate::services;
 use crate::views::{SignIn, SignUp};
@@ -22,7 +23,10 @@ pub async fn app() -> Router {
         .layer(database_layer)
 }
 
-async fn get(Extension(repository_provider): Extension<RepositoryProvider>) -> impl IntoResponse {
+async fn get(
+    _: UserContext,
+    Extension(repository_provider): Extension<RepositoryProvider>,
+) -> impl IntoResponse {
     let tweet_repo = repository_provider.tweets();
     let home = services::list_tweets(&tweet_repo).await;
     response::from_template(home)
