@@ -33,19 +33,42 @@ pub async fn create_session(
 
         let cookie = store.store_session(session).await.unwrap().unwrap();
 
-        Some(SessionToken(cookie))
+        Some(SessionToken::new(&cookie))
     } else {
         None
     }
 }
 
-pub struct SessionToken(String);
+pub fn clear_session() -> SessionToken {
+    SessionToken::clear()
+}
+
+pub struct SessionToken {
+    token: String,
+    max_age: usize,
+}
+
+impl SessionToken {
+    pub fn new(token: &str) -> SessionToken {
+        SessionToken {
+            token: token.to_string(),
+            max_age: 604800,
+        }
+    }
+
+    pub fn clear() -> SessionToken {
+        SessionToken {
+            token: "deleted".to_string(),
+            max_age: 0,
+        }
+    }
+}
 
 impl SessionToken {
     pub fn cookie(&self) -> String {
         format!(
-            "{}={}; Max-Age=604800; Path=/; HttpOnly",
-            AXUM_SESSION_COOKIE_NAME, &self.0
+            "{}={}; Max-Age={}; Path=/; HttpOnly",
+            AXUM_SESSION_COOKIE_NAME, self.token, self.max_age
         )
     }
 }

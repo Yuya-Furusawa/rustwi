@@ -1,3 +1,4 @@
+use std::collections::{HashMap, HashSet};
 use tokio_postgres::Row;
 
 use crate::database::ConnectionPool;
@@ -10,6 +11,32 @@ pub struct AccountsImpl<'a> {
 
 #[axum::async_trait]
 impl<'a> Accounts for AccountsImpl<'a> {
+    async fn find(&self, ids: HashSet<i32>) -> HashMap<i32, Account> {
+        if ids.is_empty() {
+            return HashMap::new();
+        }
+
+        let conn = self.pool.get().await.unwrap();
+        let ids_str = ids
+            .into_iter()
+            .map(|x| x.to_string())
+            .collect::<Vec<String>>()
+            .join(",");
+        let rows = conn
+            .query(
+                &format!("SELECT * FROM accounts WHERE id in ({})", ids_str),
+                &[],
+            )
+            .await
+            .unwrap();
+        rows.into_iter()
+            .map(|x| {
+                let account: Account = x.into();
+                (account.id().unwrap(), account)
+            })
+            .collect()
+    }
+
     async fn find_by(&self, email: &str) -> Option<Account> {
         let conn = self.pool.get().await.unwrap();
         let row = conn

@@ -1,4 +1,4 @@
-use crate::entities::Tweet as TweetEntity;
+use crate::entities::{Account, Tweet as TweetEntity};
 
 pub struct Tweet {
     pub id: String,
@@ -7,13 +7,13 @@ pub struct Tweet {
     pub posted_at: String,
 }
 
-impl From<TweetEntity> for Tweet {
-    fn from(e: TweetEntity) -> Self {
+impl From<(TweetEntity, &Account)> for Tweet {
+    fn from(e: (TweetEntity, &Account)) -> Self {
         Tweet {
-            id: e.id().unwrap_or(-1).to_string(),
-            name: "太郎".to_string(),
-            message: e.message,
-            posted_at: e.posted_at.format("%Y/%m/%d %H:%M").to_string(),
+            id: e.0.id().unwrap_or(-1).to_string(),
+            name: e.1.display_name.clone(),
+            message: e.0.message,
+            posted_at: e.0.posted_at.format("%Y/%m/%d %H:%M").to_string(),
         }
     }
 }

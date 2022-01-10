@@ -1,6 +1,6 @@
 use axum::{
     extract::{Extension, Query},
-    response::IntoResponse,
+    response::{Headers, IntoResponse},
     routing, Router,
 };
 use serde::Deserialize;
@@ -28,14 +28,18 @@ async fn get(
     Extension(repository_provider): Extension<RepositoryProvider>,
 ) -> impl IntoResponse {
     let tweet_repo = repository_provider.tweets();
-    let home = services::list_tweets(&tweet_repo).await;
+    let account_repo = repository_provider.accounts();
+    let home = services::list_tweets(&tweet_repo, &account_repo).await;
     response::from_template(home)
 }
 
 async fn login(query: Query<LoginQuery>) -> impl IntoResponse {
-    response::from_template(SignIn {
+    let empty_session_token = services::clear_session();
+    let headers = Headers(vec![("Set-Cookie", empty_session_token.cookie())]);
+    let response = response::from_template(SignIn {
         error: query.error.is_some(),
-    })
+    });
+    (headers, response)
 }
 
 async fn register() -> impl IntoResponse {

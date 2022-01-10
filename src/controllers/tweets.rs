@@ -17,12 +17,12 @@ pub fn tweets() -> Router {
 }
 
 async fn post(
-    _: UserContext,
+    user_context: UserContext,
     form: Form<TweetForm>,
     Extension(repository_provider): Extension<RepositoryProvider>,
 ) -> impl IntoResponse {
     let tweet_repo = repository_provider.tweets();
-    services::create_tweet(&tweet_repo, &form.message).await;
+    services::create_tweet(&tweet_repo, &user_context, &form.message).await;
     Redirect::to(Uri::from_static("/"))
 }
 

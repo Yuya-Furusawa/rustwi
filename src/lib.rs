@@ -54,7 +54,7 @@ mod services {
     mod accounts;
     mod tweets;
 
-    pub use accounts::{create_account, create_session, SessionToken};
+    pub use accounts::{clear_session, create_account, create_session, SessionToken};
     pub use tweets::{create_tweet, delete_tweet, list_tweets};
 }
 
